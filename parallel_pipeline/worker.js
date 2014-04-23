@@ -1,7 +1,10 @@
-var zmq = require( 'zmq' ),
-	  cluster = require( 'cluster' )
+var zmq     = require( 'zmq' ),
+	  cluster = require( 'cluster' ),
+    colors  = require( 'colors' )
+
 
 var concurrency = process.argv[2]
+
 
 if( cluster.isMaster ) {
 	for (var i = 0; i < concurrency; i++) {
@@ -11,7 +14,7 @@ if( cluster.isMaster ) {
 else {
 
 	var receiver = zmq.socket( 'pull' ),
-			sender   = zmq.socket( 'push' )
+		  sender   = zmq.socket( 'push' )
 
 
 	function fibonacci( n ){
@@ -24,11 +27,12 @@ else {
 		var message = parseFloat( buff.toString('utf8') )
 		var fib = fibonacci( message )
 		process.nextTick(function() {
-			console.log( "[WORKER: " + process.pid + "]" + message + " =>" + fib )
+			console.log( "[PROCESS: " + process.pid + "] " + ("fib("+message+") == " + fib).yellow )
 			sender.send( fib )	
 		})
 	})
 
+  console.log( '[WORKER: ' + process.pid + '] STARTED -'.yellow)
 	receiver.connect( 'tcp://localhost:3000' )
 	sender.connect( 'tcp://localhost:3001' )
 
